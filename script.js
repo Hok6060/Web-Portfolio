@@ -1,4 +1,4 @@
-const backendUrl = 'http://127.0.0.1:3000';
+const backendUrl = 'http://localhost:3000';
 const apiKey = 'secret-chheanghok-key';
 const TIMEOUT_MS = 5000;
 
@@ -36,7 +36,6 @@ async function fetchAPI(endpoint) {
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         return await response.json();
     } catch (error) {
-        showError(`Failed to fetch ${endpoint}: ${error.message}`);
         throw error;
     }
 }
@@ -96,6 +95,8 @@ async function fetchPersonalInfo() {
         linkedinLink.textContent = `LinkedIn: ${info.linkedin || 'Not provided'}`;
         linkedinLink.target = '_blank';
         linkedinLink.rel = 'noopener noreferrer';
+    } catch (error) {
+        showError(`Failed to fetch personal info`);
     } finally {
         setLoadingState('personal-info', false);
     }
@@ -118,7 +119,7 @@ async function fetchProjects() {
             projectsContainer.appendChild(projectDiv);
         });
     } catch (error) {
-        showError(`Failed to fetch projects: ${error.message}`);
+        showError(`Failed to fetch projects`);
     } finally {
         setLoadingState('projects', false);
     }
@@ -139,7 +140,7 @@ async function fetchSkills() {
             skillsContainer.appendChild(skillDiv);
         });
     } catch (error) {
-        showError(`Failed to fetch skills: ${error.message}`);
+        showError(`Failed to fetch skills`);
     } finally {
         setLoadingState('skills', false);
     }
@@ -155,6 +156,8 @@ async function fetchContactInfo() {
             <p>Email: ${info.email}</p>
             <p>LinkedIn: ${info.linkedin || 'Not provided'}</p>
         `;
+    } catch (error) {
+        showError(`Failed to fetch contact info`);
     } finally {
         setLoadingState('contact-info', false);
     }
