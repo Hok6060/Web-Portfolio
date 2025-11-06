@@ -9,58 +9,67 @@
 </head>
 <body class="bg-gray-100 font-sans">
     <!-- Navbar -->
-    <nav class="bg-blue-500 p-4 text-white fixed top-0 left-0 w-full z-10">
-        <div class="container mx-0 sm:flex justify-between items-center">
-            <a href="#" data-scroll-to="home" class="text-2xl font-bold cursor-pointer">Flutter Dev Portfolio</a>
-            <ul class="flex space-x-6 mt-4 sm:mt-0">
-                <li><a href="#" data-scroll-to="home" class="hover:underline nav-link">Home</a></li>
-                <li><a href="#" data-scroll-to="projects" class="hover:underline nav-link">Projects</a></li>
-                <li><a href="#" data-scroll-to="skills" class="hover:underline nav-link">Skills</a></li>
-                <li><a href="#" data-scroll-to="contact" class="hover:underline nav-link">Contact</a></li>
+    <nav id="navbar" class="p-0 text-white fixed top-0 left-0 w-full z-10 transition-colors duration-1000">
+        <div id="navbar-item" class="h-auto md:h-24 border-b-2 border-dashed border-white container mx-auto px-4 md:px-8 py-4 md:py-0 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex justify-between w-full md:w-auto">
+                <a href="#" data-scroll-to="home" class="text-xl md:text-2xl font-bold cursor-pointer">Flutter Dev Portfolio</a>
+                <button class="md:hidden" onclick="toggleMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            <ul id="mobile-menu" class="hidden md:flex flex-col md:flex-row items-center w-full md:w-auto space-y-4 md:space-y-0 md:space-x-6 mt-4 md:mt-0">
+                <li><a href="#" data-scroll-to="home" class="block hover:underline nav-link text-base">Home</a></li>
+                <li><a href="#" data-scroll-to="projects" class="block hover:underline nav-link text-base">Projects</a></li>
+                <li><a href="#" data-scroll-to="skills" class="block hover:underline nav-link text-base">Skills</a></li>
+                <li><a href="#" data-scroll-to="contact" class="block hover:underline nav-link text-base">Contact</a></li>
             </ul>
         </div>
     </nav>
 
     <!-- Hero Section with Personal Info -->
-    <section id="home" class="bg-blue-500 text-white pt-20 pb-10 text-center">
-        <div class="container mx-auto px-4 mt-8 sm:mt-0">
-            <h2 id="personal-name" class="text-3xl font-bold mb-4 sm:text-4xl">Hi, I'm [Loading...]</h2>
-            <p id="personal-passionate" class="text-xl sm:text-xl">Loading...</p>
-            <div id="personal-details" class="mt-4">
-                <p id="personal-email" class="text-base sm:text-lg">Email: Loading...</p>
-                <p id="personal-phone" class="text-base sm:text-lg">Phone: Loading...</p>
-                <p id="personal-linkedin" class="text-base sm:text-lg">
-                    <a href="#" class="underline hover:text-gray-200">LinkedIn: Loading...</a>
-                </p>
+    <section id="home" class="bg-blue-500 text-white min-h-screen flex items-center">
+        <div class="container mx-auto px-4 py-20 md:py-32">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 id="personal-name" class="text-2xl md:text-4xl lg:text-5xl font-bold mb-4">[Loading...]</h2>
+                <p id="personal-passionate" class="text-lg md:text-xl lg:text-2xl mb-6">Loading...</p>
+                <div id="personal-details" class="space-y-2">
+                    <p id="personal-email" class="text-sm md:text-base">Email: Loading...</p>
+                    <p id="personal-phone" class="text-sm md:text-base">Phone: Loading...</p>
+                    <p id="personal-linkedin" class="text-sm md:text-base">
+                        <a href="#" class="underline hover:text-gray-200">LinkedIn: Loading...</a>
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Projects Section -->
-    <section id="projects" class="py-10 sm:py-16">
-        <div class="container mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-8">My Projects</h2>
-            <div id="project-list" class="grid grid-cols-1 md:grid-cols-3 gap-8 px-12">
+    <section id="projects" class="py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-4xl font-bold mb-12 text-center">My Projects</h2>
+            <div id="projects-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                 <!-- Projects will be populated via API -->
             </div>
         </div>
     </section>
 
     <!-- Skills Section -->
-    <section id="skills" class="bg-gray-200 py-10 sm:py-16">
-        <div class="container mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-8">Skills</h2>
-            <div id="skills-list" class="flex justify-center flex-wrap gap-4 mx-8 sm:mx-0">
+    <section id="skills" class="bg-gray-200 py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-4xl font-bold mb-12 text-center">Skills</h2>
+            <div id="skills-list" class="flex flex-wrap justify-center gap-4 mx-auto max-w-4xl">
                 <!-- Skills will be populated via API -->
             </div>
         </div>
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="py-10 sm:py-16">
-        <div class="container mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-8">Get in Touch</h2>
-            <div id="contact-info" class="text-base sm:text-lg mx-8 sm:mx-0">
+    <section id="contact" class="py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-4xl font-bold mb-12 text-center">Get in Touch</h2>
+            <div id="contact-info" class="text-sm md:text-base max-w-2xl mx-auto">
                 <!-- Contact info will be populated via SQL data -->
             </div>
         </div>

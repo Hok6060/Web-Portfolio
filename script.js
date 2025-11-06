@@ -1,8 +1,57 @@
 const backendUrl = 'http://127.0.0.1:3000';
 const apiKey = 'secret-chheanghok-key';
+const TIMEOUT_MS = 5000;
 
-// Highlight Active Section on Scroll
-function highlightActiveSection() {
+// Throttle function to limit scroll event calls
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    }
+}
+
+// Toggle mobile menu
+function toggleMenu() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+}
+
+// API client with timeout and error handling
+async function fetchAPI(endpoint) {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+        const response = await fetch(`${backendUrl}${endpoint}`, {
+            headers: { 'Authorization': `Bearer ${apiKey}` },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        showError(`Failed to fetch ${endpoint}: ${error.message}`);
+        throw error;
+    }
+}
+
+// Error display function
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message bg-red-100 border-red-400 text-red-700 px-4 py-3 rounded';
+    errorDiv.textContent = message;
+    document.body.insertBefore(errorDiv, document.body.firstChild);
+    setTimeout(() => errorDiv.remove(), 5000);
+}
+
+// Highlight Active Section on Scroll (throttled)
+const highlightActiveSection = throttle(() => {
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-link');
     let currentSection = '';
@@ -16,94 +65,102 @@ function highlightActiveSection() {
     });
 
     navLinks.forEach(link => {
-        link.classList.remove('underline');
+        link.classList.remove('underline', 'font-bold', 'text-blue-700');
         if (link.getAttribute('data-scroll-to') === currentSection) {
-            link.classList.add('underline');
+            link.classList.add('underline', 'font-bold', 'text-blue-700');
         }
     });
+}, 100);
+
+// Section loading states
+function setLoadingState(elementId, isLoading) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.style.opacity = isLoading ? '0.5' : '1';
+        element.style.pointerEvents = isLoading ? 'none' : 'auto';
+    }
 }
 
-// Fetch Personal Info
+// Fetch functions with loading states
 async function fetchPersonalInfo() {
+    setLoadingState('personal-info', true);
     try {
-        const response = await fetch(`${backendUrl}/api/personal-info`, {
-            headers: { 'Authorization': `Bearer ${apiKey}` }
-        });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const info = await response.json();
+        const info = await fetchAPI('/api/personal-info');
         document.getElementById('personal-name').textContent = `Hi, I'm ${info.name}`;
         document.getElementById('personal-passionate').textContent = info.passionate || 'A Passionate Developer';
         document.getElementById('personal-email').textContent = `Email: ${info.email}`;
         document.getElementById('personal-phone').textContent = `Phone: ${info.phone || 'Not provided'}`;
+        
         const linkedinLink = document.getElementById('personal-linkedin').querySelector('a');
         linkedinLink.href = info.linkedin || '#';
         linkedinLink.textContent = `LinkedIn: ${info.linkedin || 'Not provided'}`;
         linkedinLink.target = '_blank';
         linkedinLink.rel = 'noopener noreferrer';
-    } catch (error) {
-        console.error('Error fetching personal info:', error);
+    } finally {
+        setLoadingState('personal-info', false);
     }
 }
 
-// Fetch Projects
 async function fetchProjects() {
+    setLoadingState('projects', true);
     try {
-        const response = await fetch(`${backendUrl}/api/projects`, {
-            headers: { 'Authorization': `Bearer ${apiKey}` }
+        const projects = await fetchAPI('/api/projects');
+        const projectsContainer = document.getElementById('projects-list');
+        projectsContainer.innerHTML = '';
+        projects.forEach(project => {
+            const projectDiv = document.createElement('div');
+            projectDiv.className = 'project-item border p-4 mb-4 rounded';
+            projectDiv.innerHTML = `
+                <h3 class="font-bold text-lg">${project.title}</h3>
+                <p>${project.description}</p>
+                <a href="${project.link}" target="_blank" class="text-blue-500">View Project</a>
+            `;
+            projectsContainer.appendChild(projectDiv);
         });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const projects = await response.json();
-        const projectList = document.getElementById('project-list');
-        projectList.innerHTML = projects.map(project => `
-            <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between h-full w-full sm:w-96">
-                <div>
-                    <h3 class="text-xl font-bold">${project.title}</h3>
-                    <p>${project.description}</p>
-                </div>
-                <br>
-                <a href="${project.link}" class="text-blue-500 hover:underline mt-auto">View Project</a>
-            </div>
-        `).join('');
     } catch (error) {
-        console.error('Error fetching projects:', error);
+        showError(`Failed to fetch projects: ${error.message}`);
+    } finally {
+        setLoadingState('projects', false);
     }
 }
 
-// Fetch Skills
 async function fetchSkills() {
+    setLoadingState('skills', true);
     try {
-        const response = await fetch(`${backendUrl}/api/skills`, {
-            headers: { 'Authorization': `Bearer ${apiKey}` }
+        const skills = await fetchAPI('/api/skills');
+        const skillsContainer = document.getElementById('skills-list');
+        skillsContainer.innerHTML = '';
+        skills.forEach(skill => {
+            const skillDiv = document.createElement('div');
+            skillDiv.className = 'skill-item border p-4 mb-4 rounded';
+            skillDiv.innerHTML = `
+                <h3 class="font-bold text-lg">${skill.skill_name}</h3>
+            `;
+            skillsContainer.appendChild(skillDiv);
         });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const skills = await response.json();
-        const skillsList = document.getElementById('skills-list');
-        skillsList.innerHTML = skills.map(skill => `
-            <span class="bg-blue-600 text-white px-4 py-2 rounded">${skill.skill_name}</span>
-        `).join('');
     } catch (error) {
-        console.error('Error fetching skills:', error);
+        showError(`Failed to fetch skills: ${error.message}`);
+    } finally {
+        setLoadingState('skills', false);
     }
 }
 
-// Fetch Contact Info
 async function fetchContactInfo() {
+    setLoadingState('contact-info', true);
     try {
-        const response = await fetch(`${backendUrl}/api/personal-info`, {
-            headers: { 'Authorization': `Bearer ${apiKey}` }
-        });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const data = await response.json();
-        const contactInfoDiv = document.getElementById('contact-info');
-        contactInfoDiv.innerHTML = `
-            <p class="mb-4 sm:mb-0">Email: ${data.email}</p>
-            <p>LinkedIn: <a href="${data.linkedin}" class="underline hover:text-blue-600" target="_blank" rel="noopener noreferrer">${data.linkedin}</a></p>
+        const info = await fetchAPI('/api/personal-info');
+        const contactContainer = document.getElementById('contact-info');
+        contactContainer.innerHTML = `
+            <h3 class="font-bold text-lg">Contact Information</h3>
+            <p>Email: ${info.email}</p>
+            <p>LinkedIn: ${info.linkedin || 'Not provided'}</p>
         `;
-    } catch (error) {
-        console.error('Error fetching contact info:', error);
+    } finally {
+        setLoadingState('contact-info', false);
     }
 }
 
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-scroll-to]').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -111,7 +168,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const sectionId = link.getAttribute('data-scroll-to');
             const section = document.getElementById(sectionId);
             section.scrollIntoView({ behavior: 'smooth' });
+
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
         });
+    });
+
+    window.addEventListener('scroll', () => {
+        const navbar = document.getElementById('navbar');
+        const navbarItem = document.getElementById('navbar-item');
+        if (window.scrollY > 10) {
+            navbar.classList.remove('text-white');
+            navbar.classList.add('bg-white', 'text-black');
+            navbarItem.classList.remove('border-b-2', 'border-dashed', 'border-white','md:h-24');
+            navbarItem.classList.add('md:h-16');
+        } else {
+            navbar.classList.remove('bg-white', 'text-black');
+            navbar.classList.add('text-white');
+            navbarItem.classList.remove('md:h-16');
+            navbarItem.classList.add('md:h-24', 'border-b-2', 'border-dashed', 'border-white');
+        }
     });
 
     const loadingDialog = document.createElement('div');
