@@ -1,11 +1,23 @@
-const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
-const cors = require('cors');
 require('dotenv').config();
 
+const express = require('express');
+const mysql = require('mysql2');
+const cors = require('cors');
+
 const app = express();
-const apiKey = process.env.API_KEY || 'secret-chheanghok-key';
-const PORT = process.env.PORT || 3000;
+const apiKey = process.env.API_KEY;
+const PORT = process.env.PORT;
+
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
 const restrictAccess = (req, res, next) => {
     const providedKey = req.headers['authorization'];
     if (!providedKey || providedKey !== `Bearer ${apiKey}`) {
@@ -22,59 +34,46 @@ app.use((req, res, next) => {
     next();
 });
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+app.use('/api', restrictAccess);
 
-try {
-    console.log('Starting connection to Supabase...');
-
-    app.use('/api', restrictAccess);
-
-    app.get('/api/personal-info', async (req, res) => {
-        try {
-            const { data, error } = await supabase.from('personal_info').select('*').limit(1).single();
-            if (error) throw error;
-            res.json(data || { error: 'No data found' });
-        } catch (err) {
-            console.error('Query error:', err.message);
-            res.status(500).json({ error: 'Database error' });
+app.get('/api/personal-info', (req, res) => {
+    pool.query('SELECT * FROM personal_info LIMIT 1', (err, results) => {
+        if (err) {
+            console.error('Query error:', err);
+            return res.status(500).json({ error: 'Database error' });
         }
+        res.json(results[0] || { error: 'No data found' });
     });
+});
 
-    app.get('/api/projects', async (req, res) => {
-        try {
-            const { data, error } = await supabase.from('projects').select('*');
-            if (error) throw error;
-            res.json(data);
-        } catch (err) {
-            console.error('Query error:', err.message);
-            res.status(500).json({ error: 'Database error' });
+app.get('/api/projects', (req, res) => {
+    pool.query('SELECT * FROM projects', (err, results) => {
+        if (err) {
+            console.error('Query error:', err);
+            return res.status(500).json({ error: 'Database error' });
         }
+        res.json(results);
     });
+});
 
-    app.get('/api/skills', async (req, res) => {
-        try {
-            const { data, error } = await supabase.from('skills').select('*');
-            if (error) throw error;
-            res.json(data);
-        } catch (err) {
-            console.error('Query error:', err.message);
-            res.status(500).json({ error: 'Database error' });
+app.get('/api/skills', (req, res) => {
+    pool.query('SELECT * FROM skills', (err, results) => {
+        if (err) {
+            console.error('Query error:', err);
+            return res.status(500).json({ error: 'Database error' });
         }
+        res.json(results);
     });
+});
 
-    app.get('/', (req, res) => {
-        res.status(404).json({ error: 'Route not found' });
-    });
+app.get('/', (req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+});
 
-    app.get('*', (req, res) => {
-        res.status(404).json({ error: 'Route not found' });
-    });
-    
-    app.listen(PORT, () => {
-        console.log(`Connection successful. Server running on port ${PORT}`);
-    });
-} catch (err) {
-    console.error('Startup error:', err.message);
-}
+app.get('*', (req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port 127.0.0.1:${PORT}`);
+});

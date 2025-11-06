@@ -1,4 +1,4 @@
-const backendUrl = 'https://web-portfolio-d0hy.onrender.com';
+const backendUrl = 'http://127.0.0.1:3000';
 const apiKey = 'secret-chheanghok-key';
 
 // Highlight Active Section on Scroll
